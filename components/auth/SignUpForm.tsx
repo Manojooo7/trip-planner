@@ -6,6 +6,10 @@ import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, Form
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { useForm } from "react-hook-form"
+import { Spinner } from "../ui/spinner"
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 
 const SignUpFormSchema = z.object({
@@ -23,6 +27,8 @@ type SignUpFormType = z.infer<typeof SignUpFormSchema>
 
 const SignUpForm = ({onLogin}: SignUpFormProps) => {
 
+    const router = useRouter()
+
     const form = useForm<SignUpFormType>({
         resolver: zodResolver(SignUpFormSchema),
         defaultValues: {
@@ -32,15 +38,27 @@ const SignUpForm = ({onLogin}: SignUpFormProps) => {
         }
     })
 
-    const onSubmit = (data:SignUpFormType)=>{
-        console.log("Form Data:", data)
-    }
+    const {formState} = form
+
+    const onSubmit = async (data:SignUpFormType)=>{
+        // console.log("Form Data:", data)
+        await authClient.signUp.email({...data},
+            {
+                onError: (error)=>{
+                    console.log(error);
+                    toast.error(error.error.message || "Something Went wrong")
+                },
+                onSuccess: () =>{
+                    toast.success("You're account has been created successfully")
+                    router.push("/")
+                }
+            }
+    )}
   return (
     <Form {...form}>
         <form 
             onSubmit={form.handleSubmit(onSubmit)}
-            className='flex flex-col gap-6'
-            max-w-sm mx-auto
+            className='flex flex-col gap-6 max-w-sm mx-auto'
         >
 
             <div className="text-center">
@@ -59,6 +77,7 @@ const SignUpForm = ({onLogin}: SignUpFormProps) => {
                                 type='text'
                                 placeholder="John Doe"
                                 {...field}
+                                disabled={formState.isSubmitting}
                             />
                         </FormControl>
                         <FormMessage/>
@@ -77,6 +96,7 @@ const SignUpForm = ({onLogin}: SignUpFormProps) => {
                                 type="email"
                                 placeholder="m@example.com"
                                 {...field}
+                                disabled={formState.isSubmitting}
                             />
                         </FormControl>
                         <FormMessage />
@@ -95,14 +115,16 @@ const SignUpForm = ({onLogin}: SignUpFormProps) => {
                                 type='password'
                                 placeholder="********"
                                 {...field}
+                                disabled={formState.isSubmitting}
                             />
                         </FormControl>
                     </FormItem>
                 )}
             />
 
-            <Button type='submit' className='w-full'>
+            <Button disabled={formState.isSubmitting} type='submit' className='w-full'>
                 Login
+                {formState.isSubmitting && <Spinner/>}
             </Button>
 
             <FormDescription className='text-center'>

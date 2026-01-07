@@ -1,9 +1,22 @@
+"use client"
 import { GalleryVerticalEnd } from "lucide-react"
-
 import {SignInForm} from "@/components/auth/SignInForm"
 import { AuthContainer } from "@/components/auth/AuthContainer"
+import { useEffect } from "react"
+import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
 
 export default function SigninPage() {
+
+    const router = useRouter()
+
+    useEffect(()=>{
+        authClient.getSession().then(session =>{
+            if(session.data !== null) router.push("/")
+        })
+    },[router])
+
+    
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">

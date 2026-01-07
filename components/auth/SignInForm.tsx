@@ -15,6 +15,10 @@ import {
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Spinner } from "../ui/spinner"
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 const SignInFormSchema = z.object({
   email: z.email("Please enter a valid email"),
@@ -37,8 +41,26 @@ export function SignInForm({ onForgot, onSignIn }: SignInFormProps) {
     },
   })
 
-  const onSubmit = (data: SignInFormType) => {
-    console.log("Form Data:", data)
+  const router =useRouter()
+
+  const {formState} = form
+
+  const onSubmit = async(data: SignInFormType) => {
+
+    await authClient.signIn.email({...data},
+      {
+        onError: (error)=>{
+          console.log(error.error.message);
+          toast.error(error.error.message || "Something went wrong tray again later")
+        },
+
+        onSuccess: ()=>{
+          router.push("/")
+          toast.success("Login successfully")
+        }
+      }
+    )
+
   }
 
   return (
@@ -62,7 +84,12 @@ export function SignInForm({ onForgot, onSignIn }: SignInFormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="m@example.com" {...field} />
+                <Input 
+                  type="email" 
+                  placeholder="m@example.com"
+                  {...field} 
+                  disabled={formState.isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,23 +104,34 @@ export function SignInForm({ onForgot, onSignIn }: SignInFormProps) {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="********" 
+                  {...field} 
+                  disabled={formState.isSubmitting}
+                />
               </FormControl>
               <FormMessage />
 
-              <button
-                type="button"
+              <a
                 onClick={onForgot}
-                className="text-sm text-right mt-2 underline cursor-pointer"
+                className="text-sm text-right mt-2 underline cursor-pointer w-fit"
               >
                 Forgot password?
-              </button>
+              </a>
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full">
+        <Button 
+          type="submit" 
+          className="w-full cursor-pointer"
+          disabled={formState.isSubmitting}
+        >
+
           Login
+          {formState.isSubmitting && <Spinner/>}
+          
         </Button>
 
         <FormDescription className="text-center">

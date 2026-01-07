@@ -22,6 +22,8 @@ const ResetPasswordForm = ({onBack}: {onBack?: ()=>void}) => {
     }
   })
 
+  const {formState} = form
+
   const onSubmit = (data:ResetPasswordType)=>{
     console.log("Form Data:", data)
   }
@@ -48,13 +50,20 @@ const ResetPasswordForm = ({onBack}: {onBack?: ()=>void}) => {
                   type='email'
                   placeholder="Enter your email"
                   {...field}
+                  disabled={formState.isSubmitting}
                 />
               </FormControl>
             </FormItem>
           )}
         />
 
-        <Button type="submit">Send Reset Link</Button>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={formState.isSubmitting}
+        >
+          Send Reset Link
+        </Button>
 
         <button
           type="button"
